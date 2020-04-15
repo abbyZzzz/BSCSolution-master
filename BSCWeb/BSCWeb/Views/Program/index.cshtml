@@ -1,0 +1,277 @@
+﻿@{
+    Layout = null;
+    Html.RenderPartial("/Views/Shared/_PartialView.cshtml");
+    @model List<Advantech.Entity.ProgramInfo>
+}
+<script type="text/javascript">
+    var zTree = null;
+    var setting = {
+        view: {
+            addHoverDom: addHoverDom,
+            removeHoverDom: removeHoverDom,
+            selectedMulti: false
+        },
+        edit: {
+            enable: true,
+            editNameSelectAll: true,
+            showRemoveBtn: showRemoveBtn,
+            showRenameBtn: showRenameBtn
+        },
+        data: {
+            simpleData: {
+                enable: true
+            }
+        },
+        callback: {
+            beforeDrag: beforeDrag,
+            beforeEditName: beforeEditName,
+            beforeRename: beforeRename,
+            beforeRemove: beforeRemove,
+            beforeClick: beforeClick
+        }
+    };
+
+    var dataMaker = function (count) {
+        var nodes = []
+        $.ajax({
+            type: "GET",
+            url: "/Program/ToSelectGroup",
+            async: false,
+            dataType: "JSON",
+            success: function (result) {
+                nodes = result;
+            },
+            error: function (result) {
+            }
+
+        });
+        return nodes;
+    }
+
+    var log, className = "dark";
+    function beforeDrag(treeId, treeNodes) {
+        return false;
+    }
+
+    //是否显示更新按钮
+    function showRenameBtn(treeId, treeNode) {
+        var pId = treeNode.pId;
+        if (pId == null) {
+            return false;
+        }
+        else {
+            return true;
+        }
+    }
+    //触发编辑
+    function beforeEditName(treeId, treeNode) {
+
+        zTree.selectNode(treeNode);
+        setTimeout(function () {
+            if (confirm("确认编辑" + treeNode.name + "吗?")) {
+                setTimeout(function () {
+                    zTree.editName(treeNode);
+                }, 0);
+            }
+        }, 0);
+        return false;
+    }
+    //编辑之后
+    function beforeRename(treeId, treeNode, newName, isCancel) {
+        if (newName.length == 0) {
+            setTimeout(function () {
+                zTree.cancelEditName();
+                alert("节点名称不能为空.");
+            }, 0);
+            return false;
+        }
+        else {
+            if (treeNode.name == newName) {//如果旧名称与新名称一致，无需触发ajax
+                return true;
+            }
+            else {
+                $.ajax({
+                    url: '/Program/ToPutGroup',
+                    data: { id: treeNode.id, pgroup_name: newName },
+                    type: 'post',
+                    dataType: 'json',
+                    async: false,
+                    success: function (data) {
+                        if (data == true) {
+                            return true;
+                        }
+                        else {
+                            return false;
+                        }
+                    },
+                    error: function () {
+                        return false;
+                    }
+                });
+            }
+        }
+    }
+
+    //是否显示删除按钮
+    function showRemoveBtn(treeId, treeNode) {
+        var pId = treeNode.pId;
+        if (pId == null) {
+            return false;
+        }
+        else {
+            return true;
+        }
+    }
+
+    //触发删除
+    function beforeRemove(treeId, treeNode) {
+        if (confirm("确认删除" + treeNode.name + " 吗？")) {
+            //ajax触发数据库修改
+            $.ajax({
+                url: '/Program/ToDelGroup',
+                data: { id: treeNode.id },
+                type: 'post',
+                async: false,
+                dataType: 'json',
+                success: function (data) {
+                    if (data) {
+                        zTree.removeNode(treeNode);
+                    }
+                },
+                error: function () {
+                }
+            });
+        }
+        else {
+            return false;
+        }
+        return false;
+    }
+
+
+    //鼠标移开后触发
+    function removeHoverDom(treeId, treeNode) {
+        $("#addBtn_" + treeNode.tId).unbind().remove();
+    };
+    //判断新增是否可用(处于非顶级)
+    function beforeClick(treeId, treeNode) {
+
+        var pgroup_group_id_old = $("#pgroup_group_id").val();
+        if (pgroup_group_id_old != treeNode.id) {
+            var pgroup_group_id = 0;
+            $("#pgroup_group_id").val(treeNode.id);
+            if (!isNaN(treeNode.id)) {
+                $("#add").removeAttr("disabled");
+                pgroup_group_id = treeNode.id;
+            }
+            else {
+                $("#add").attr({ "disabled": "disabled" });
+            }
+        }
+        //    $.ajax({
+        //        url: '/Program/GetAjaxData',
+        //        data: { media_group_id: media_group_id },
+        //        type: 'post',
+        //        async: false,
+        //        success: function (data) {
+        //            $('#content_medias').html(data);
+        //        },
+        //        error: function () {
+        //        }
+        //    });
+        //}
+
+    }
+
+    //新增后触发
+    var newCount = 1;
+    function addHoverDom(treeId, treeNode) {
+        var sObj = $("#" + treeNode.tId + "_span");
+        if (treeNode.editNameFlag || $("#addBtn_" + treeNode.tId).length > 0) return;
+        var addStr = "<span class='button add' id='addBtn_" + treeNode.tId
+            + "' title='add node' onfocus='this.blur();'></span>";
+        sObj.after(addStr);
+        var btn = $("#addBtn_" + treeNode.tId);
+        if (btn) btn.bind("click", function () {
+            $.ajax({
+                url: '/Program/ToAddGroup',
+                data: { id: treeNode.id, pId: treeNode.pId },
+                type: 'post',
+                dataType: 'json',
+                async: false,
+                success: function (data) {
+                    if (data != false) {
+                        zTree.addNodes(treeNode, { id: data["id"], pId: data["parent_id"], name: data["pgroup_name"] });
+                    }
+                },
+                error: function () {
+                }
+            });
+
+            return false;
+        });
+    };
+
+    $(document).ready(function () {
+        var zNodes = dataMaker();
+        zTree = $.fn.zTree.init($("#ztrees"), setting, zNodes);
+    });
+
+</script>
+
+<div class="content">
+    <div class="container-fluid">
+        <div class="page-title-box">
+            <div class="row align-items-center">
+                <div class="col-sm-6">
+                    <h4 class="page-title">节目管理</h4>
+                </div>
+                <div class="col-sm-6">
+                    <ol class="breadcrumb float-right">
+                        <li class="breadcrumb-item"><a href="javascript:void(0);">BSC</a></li>
+                        <li class="breadcrumb-item active">节目管理</li>
+                        <li class="breadcrumb-item active">节目列表</li>
+                    </ol>
+                </div>
+            </div>
+            <!-- end row -->
+        </div>
+        <!-- end page-title -->
+        <div class="content_left">
+            <div class="content_top">
+                <span class="left">目录</span>
+            </div>
+            <div class="content_footer">
+                <ul id="ztrees" class="ztree"></ul>
+            </div>
+
+
+        </div>
+        <div class="content_right">
+            <div class="content_top">
+                <div class="content_top_div">
+                    <span class="left">搜索</span>
+                    <input type="text" value="" class="content_top_text right" placeholder="按名称搜索" oninput="Serch($(this).val())" />
+                </div>
+                <div class="content_top_div">
+                    <span class="left">全选</span>
+                    <input id="selectAll" name="selectAll" type="checkbox" value="" class="content_top_checkbox right" onclick="SelectAll()" />
+                </div>
+                <div class="content_top_div">
+                    <input id="add" type="button" value="新增" class="content_top_button left" disabled="disabled" onclick="javascript:window.location.href='/Program/Edit'" />
+                    <input id="delete" type="button" value="删除" class="content_top_button right" disabled="disabled" onclick="submitDel()" />
+                    <input type="hidden" value="" id="program_group_id" name="program_group_id" />
+                </div>
+
+            </div>
+            <div class="content_footer" id="content_medias">
+
+            </div>
+        </div>
+
+
+
+    </div>
+</div>
+
+

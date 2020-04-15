@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <RootNamespace>Advantech.AuthenticationService</RootNamespace>
+    <UserSecretsId>b65fc192-a1a4-4f7d-bdee-7649f9056234</UserSecretsId>
+    <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+    <LangVersion>8.0</LangVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Examda.Thrift" Version="1.0.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="3.1.2" />
+    <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.9.10" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\BSCWeb\CommonExtention\CoreExtention.csproj" />
+    <ProjectReference Include="..\Entity\Entity\Entity.csproj" />
+    <ProjectReference Include="..\RepositoryNetStandard\Repository.csproj" />
+    <ProjectReference Include="..\ServiceNetStandard\Service.csproj" />
+    <ProjectReference Include="..\UtilsStandard\UtilsStandardLib.csproj" />
+  </ItemGroup>
+
+  <ProjectExtensions><VisualStudio><UserProperties properties_4launchsettings_1json__JsonSchema="" /></VisualStudio></ProjectExtensions>
+
+</Project>

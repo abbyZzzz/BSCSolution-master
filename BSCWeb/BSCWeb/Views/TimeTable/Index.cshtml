@@ -1,0 +1,185 @@
+﻿@{
+    Layout = null;
+    Html.RenderPartial("/Views/Shared/_PartialView.cshtml");
+
+}
+
+<div class="content" id="app">
+    <div class="container-fluid">
+        <div class="page-title-box">
+            <div class="row align-items-center">
+                <div class="col-sm-6">
+                    <h4 class="page-title">时刻表管理</h4>
+                </div>
+                <div class="col-sm-6">
+                    <ol class="breadcrumb float-right">
+                        <li class="breadcrumb-item"><a href="javascript:void(0);">BSC</a></li>
+                        <li class="breadcrumb-item active">时刻表管理</li>
+                        <li class="breadcrumb-item active">单日时刻表</li>
+                    </ol>
+                </div>
+            </div>
+            <!-- end row -->
+        </div>
+        <!-- end page-title -->
+
+
+        <div class="row">
+            <div class="col-sm-12">
+                <div class="card-body">
+                    <div class="content_top row align-items-center" style="margin-left: 0px;margin-right:0px;height: 50px;">
+                        <div class="col-sm-10">
+                            <div class="form-group row" style="margin-bottom:0px">
+                                <label class="col-sm-1 col-form-label label-short1">节目详情</label>
+                            </div>
+                        </div>
+                        <div class="col-sm-2" style="padding-left:170px">
+                            <a class="btn btn-primary" href="/TimeTable/Edit"><i class="fas fa-plus"></i>  新增</a>
+                        </div>
+                    </div>
+                    <div class="content_footer" align="center">
+                        <table id="scheduleDay" class="table table-bordered text-nowrap table-hover" style="font-size:14px;"></table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal fade" id="myDelModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="myModalLabel">
+                                删除
+                            </h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                                &times;
+                            </button>
+
+                        </div>
+                        <div class="modal-body">
+                            <input type="hidden" id="deleteId" ref="deleteId" v-model="deleteId" />
+                            是否确认删除节目：<span id="deleteName" v-model="deleteName" style="padding:0 10px;"></span> ？
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                                关闭
+                            </button>
+                            <button type="button" class="btn btn-primary" v-on:click="ConfirmDelete">
+                                确认
+                            </button>
+                        </div>
+                    </div><!-- /.modal-content -->
+                </div><!-- /.modal -->
+            </div>
+
+        </div>
+
+    </div>
+</div>
+
+<script>
+    var app = new Vue({
+        el: "#app",
+        data: {
+            deleteId: '',
+            deleteName:''
+        },
+        mounted: function () {
+            var _self = this;
+            _self.$nextTick(function () {
+                setTimeout(function () {
+                    _self.Load();
+                },500);
+            })
+        },
+        methods: {
+            Load: function () {
+                var _self=this;
+                $("#scheduleDay").bootstrapTable({
+                    url: '/TimeTable/GetScheduleDay?id=0&type=1',
+                    method: 'GET',
+                    theadClasses: "thead-blue",
+                    pagination: true,
+                    sidePagination: "client",
+                    pageNumber: 1,
+                    pageSize: 20,
+                    undefinedText: '---',
+                    paginationDetailHAlign: 'left',
+                    toolbarAlign: 'right',
+                    columns: [{
+                        field: 'no',
+                        title: '#',
+                        align: 'center',
+                        formatter: function (value, row, index) {
+                            return index + 1;
+                        }
+                    }, {
+                        field: 'id',
+                        title: 'id',
+                        visible: false
+                    },  {
+                        field: 'group_name',
+                        title: '部门',
+                        align:'center',
+                        sortable:true
+                    },{
+                        field: 'schedule_name',
+                        title: '名称',
+                        align:'center',
+                        sortable:true
+                    }, {
+                        field: 'create_time',
+                        title: '创建时间',
+                        align:'center',
+                        sortable:true,
+                        formatter: function (value, row, index) {
+                            return value.replace("T", " ").split(".")[0];
+                        }
+                    }, {
+                        field: 'eventAction',
+                        title: '操作',
+                        align:'center',
+                        formatter: _self.actionFormatter
+                    }]
+                });
+
+
+            },
+            actionFormatter: function (value, row, index) {
+                var result = "";
+                result += "<a href='/TimeTable/Edit?id=" + row.id + "' title='编辑' style='font-size:24px;'><span class='fas fa-edit'></span></a>";
+                result += "<span style='padding:0px 10px'></span>"
+                result += "<a title='删除' href='#' onclick=\"deleteInfo(" + row.id + ",'" + row.schedule_name + "')\" data-toggle='modal' data-target='#myDelModal' style='font-size:24px;'><span class='fas fa-trash-alt'></span></a>";
+                return result;
+            }
+        }
+    });
+
+    function deleteInfo(id, name) {
+        document.getElementById("deleteId").value = id;
+        document.getElementById("deleteName").innerHTML = name;
+    }
+
+    function ConfirmDelete() {
+        var id = $("#deleteId").val();
+        $.ajax({
+            type: "POST",
+            url: "/TimeTable/DelScheduleDay",
+            data: {
+                id: id
+            },
+            success: function (msg) {
+                if (msg == "Success") {
+                    toastr.success("数据删除成功！");
+                    $("#myDelModal").modal('hide');
+                    $("#scheduleDay").bootstrapTable('refresh');
+                } else {
+                    toastr.error("数据删除失败！");
+                }
+            }, error: function (msg) {
+                toastr.error("数据删除失败！");
+            }
+        });
+    }
+</script>
+
+

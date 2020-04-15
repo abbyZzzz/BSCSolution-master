@@ -1,0 +1,102 @@
+﻿<Window x:Class="Advantech.BSCPlayer.View.ClientInfoView"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Advantech.BSCPlayer.View"
+        DataContext="{Binding Source={StaticResource Locator},Path=clientInfoView}"
+        mc:Ignorable="d"
+        Title="客户端信息" Height="492" Width="493" Background="#FF8AB0B4" WindowStartupLocation="CenterOwner" ResizeMode="NoResize">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="50*"/>
+            <ColumnDefinition Width="103*"/>
+        </Grid.ColumnDefinitions>
+        <Label x:Name="label" Content="客户端ID" HorizontalAlignment="Center" Margin="0" VerticalAlignment="Center" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" FontSize="14"/>
+        <TextBox x:Name="textBox" Grid.Column="1" Text="{Binding PlayerInfo.client_id, Mode=TwoWay}"  HorizontalAlignment="Center" Height="27" Margin="0" TextWrapping="Wrap" VerticalAlignment="Center" Width="300" FontSize="14" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" IsReadOnly="True">
+            <TextBox.Background>
+                <SolidColorBrush Color="{DynamicResource {x:Static SystemColors.InactiveBorderColorKey}}"/>
+            </TextBox.Background>
+        </TextBox>
+        <Label x:Name="label_Copy" Content="客户端网络地址" HorizontalAlignment="Center" Margin="0" VerticalAlignment="Center" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" FontSize="14" Grid.Row="1" Width="112"/>
+        <TextBox x:Name="textBox_Copy" Grid.Column="1" Text="{Binding PlayerInfo.ip_address, Mode=TwoWay}" HorizontalAlignment="Center" Height="27" Margin="0" TextWrapping="Wrap" VerticalAlignment="Center" Width="300" FontSize="14" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" IsReadOnly="True" Grid.Row="1">
+            <TextBox.Background>
+                <SolidColorBrush Color="{DynamicResource {x:Static SystemColors.InactiveBorderColorKey}}"/>
+            </TextBox.Background>
+        </TextBox>
+        <Label x:Name="label_Copy1" Content="客户端屏幕数量" HorizontalAlignment="Center" Margin="0" VerticalAlignment="Center" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" FontSize="14" Grid.Row="2" Width="112"/>
+        <TextBox x:Name="textBox_Copy1" Grid.Column="1" Text="{Binding PlayerInfo.screen_count, Mode=TwoWay}" HorizontalAlignment="Center" Height="28" Margin="0" TextWrapping="Wrap" VerticalAlignment="Center" Width="300" FontSize="14" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" IsReadOnly="True" Grid.Row="2">
+            <TextBox.Background>
+                <SolidColorBrush Color="{DynamicResource {x:Static SystemColors.InactiveBorderColorKey}}"/>
+            </TextBox.Background>
+        </TextBox>
+        <Label x:Name="label_Copy2" Content="计算机名称" HorizontalAlignment="Center" Margin="0" VerticalAlignment="Center" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" FontSize="14" Grid.Row="3" Width="112"/>
+        <Label x:Name="label_Copy3" Content="计算机系统信息" HorizontalAlignment="Center" Margin="0" VerticalAlignment="Center" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" FontSize="14" Grid.Row="4" Width="112"/>
+        <TextBox x:Name="textBox_Copy2" Grid.Column="1" Text="{Binding PlayerInfo.computer_name, Mode=TwoWay}" HorizontalAlignment="Center" Height="28" Margin="0" TextWrapping="Wrap" VerticalAlignment="Center" Width="300" FontSize="14" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" IsReadOnly="True" Grid.Row="3">
+            <TextBox.Background>
+                <SolidColorBrush Color="{DynamicResource {x:Static SystemColors.InactiveBorderColorKey}}"/>
+            </TextBox.Background>
+        </TextBox>
+        <TextBox x:Name="textBox_Copy3" Grid.Column="1" Text="{Binding PlayerInfo.system_info, Mode=TwoWay}" HorizontalAlignment="Center" Height="28" Margin="0" TextWrapping="Wrap" VerticalAlignment="Center" Width="300" FontSize="14" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" IsReadOnly="True" Grid.Row="4">
+            <TextBox.Background>
+                <SolidColorBrush Color="{DynamicResource {x:Static SystemColors.InactiveBorderColorKey}}"/>
+            </TextBox.Background>
+        </TextBox>
+        <Label x:Name="label_Copy4" Content="主板信息" HorizontalAlignment="Center" Margin="0" VerticalAlignment="Center" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" FontSize="14" Grid.Row="5" Width="112"/>
+        <Label x:Name="label_Copy5" Content="BIOS信息" HorizontalAlignment="Center" Margin="0" VerticalAlignment="Center" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" FontSize="14" Grid.Row="6" Width="112"/>
+        <Label x:Name="label_Copy6" Content="CPU信息" HorizontalAlignment="Center" Margin="0" VerticalAlignment="Center" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" FontSize="14" Grid.Row="7" Width="112"/>
+        <Label x:Name="label_Copy7" Content="内存大小" HorizontalAlignment="Center" Margin="0" VerticalAlignment="Center" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" FontSize="14" Grid.Row="8" Width="112"/>
+        <Label x:Name="label_Copy8" Content="软件版本" HorizontalAlignment="Center" Margin="0" VerticalAlignment="Center" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" FontSize="14" Grid.Row="9" Width="112"/>
+        <Label x:Name="label_Copy9" Content="是否自动关机" HorizontalAlignment="Center" Margin="0" VerticalAlignment="Center" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" FontSize="14" Grid.Row="10" Width="112"/>
+        <Label x:Name="label_Copy10" Content="自动关机时间" HorizontalAlignment="Center" Margin="0" VerticalAlignment="Center" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" FontSize="14" Grid.Row="11" Width="112"/>
+        <TextBox x:Name="textBox_Copy4" Grid.Column="1" Text="{Binding PlayerInfo.brand_info, Mode=TwoWay}" HorizontalAlignment="Center" Height="28" Margin="0" TextWrapping="Wrap" VerticalAlignment="Center" Width="300" FontSize="14" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" IsReadOnly="True" Grid.Row="5">
+            <TextBox.Background>
+                <SolidColorBrush Color="{DynamicResource {x:Static SystemColors.InactiveBorderColorKey}}"/>
+            </TextBox.Background>
+        </TextBox>
+        <TextBox x:Name="textBox_Copy5" Grid.Column="1" Text="{Binding PlayerInfo.bios_info, Mode=TwoWay}" HorizontalAlignment="Center" Height="28" Margin="0" TextWrapping="Wrap" VerticalAlignment="Center" Width="300" FontSize="14" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" IsReadOnly="True" Grid.Row="6">
+            <TextBox.Background>
+                <SolidColorBrush Color="{DynamicResource {x:Static SystemColors.InactiveBorderColorKey}}"/>
+            </TextBox.Background>
+        </TextBox>
+        <TextBox x:Name="textBox_Copy6" Grid.Column="1" Text="{Binding PlayerInfo.cpu_info, Mode=TwoWay}" HorizontalAlignment="Center" Height="28" Margin="0" TextWrapping="Wrap" VerticalAlignment="Center" Width="300" FontSize="14" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" IsReadOnly="True" Grid.Row="7">
+            <TextBox.Background>
+                <SolidColorBrush Color="{DynamicResource {x:Static SystemColors.InactiveBorderColorKey}}"/>
+            </TextBox.Background>
+        </TextBox>
+        <TextBox x:Name="textBox_Copy7" Grid.Column="1" Text="{Binding PlayerInfo.memory_size, Mode=TwoWay}" HorizontalAlignment="Center" Height="28" Margin="0" TextWrapping="Wrap"  VerticalAlignment="Center" Width="300" FontSize="14" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" IsReadOnly="True" Grid.Row="8">
+            <TextBox.Background>
+                <SolidColorBrush Color="{DynamicResource {x:Static SystemColors.InactiveBorderColorKey}}"/>
+            </TextBox.Background>
+        </TextBox>
+        <TextBox x:Name="textBox_Copy8" Grid.Column="1" Text="{Binding PlayerInfo.software_version, Mode=TwoWay}" HorizontalAlignment="Center" Height="28" Margin="0" TextWrapping="Wrap" VerticalAlignment="Center" Width="300" FontSize="14" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" IsReadOnly="True" Grid.Row="9">
+            <TextBox.Background>
+                <SolidColorBrush Color="{DynamicResource {x:Static SystemColors.InactiveBorderColorKey}}"/>
+            </TextBox.Background>
+        </TextBox>
+        <TextBox x:Name="textBox_Copy9" Grid.Column="1" Text="{Binding PlayerInfo.auto_shutdown, Mode=TwoWay}" HorizontalAlignment="Center" Height="28" Margin="0" TextWrapping="Wrap" VerticalAlignment="Center" Width="300" FontSize="14" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" IsReadOnly="True" Grid.Row="10">
+            <TextBox.Background>
+                <SolidColorBrush Color="{DynamicResource {x:Static SystemColors.InactiveBorderColorKey}}"/>
+            </TextBox.Background>
+        </TextBox>
+        <TextBox x:Name="textBox_Copy10" Grid.Column="1" Text="{Binding PlayerInfo.shutdown_time, Mode=TwoWay}" HorizontalAlignment="Center" Height="28" Margin="0" TextWrapping="Wrap" VerticalAlignment="Center" Width="300" FontSize="14" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" IsReadOnly="True" Grid.Row="11">
+            <TextBox.Background>
+                <SolidColorBrush Color="{DynamicResource {x:Static SystemColors.InactiveBorderColorKey}}"/>
+            </TextBox.Background>
+        </TextBox>
+    </Grid>
+</Window>

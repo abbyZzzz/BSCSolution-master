@@ -1,0 +1,18 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <RootNamespace>Advantech.Service</RootNamespace>
+    <AssemblyName>Advantech.Service</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Entity\Entity\Entity.csproj" />
+    <ProjectReference Include="..\RepositoryNetStandard\Repository.csproj" />
+  </ItemGroup>
+
+</Project>

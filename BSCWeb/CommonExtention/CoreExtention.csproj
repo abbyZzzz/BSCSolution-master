@@ -1,0 +1,47 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <RootNamespace>Advantech.CoreExtention</RootNamespace>
+    <LangVersion>8.0</LangVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="ImageResizer.Plugins.PdfiumRenderer.Pdfium.Dll" Version="1.0.1" />
+    <PackageReference Include="Jil" Version="2.17.0" />
+    <PackageReference Include="Microsoft.AspNet.WebApi.Core" Version="5.2.7" />
+    <PackageReference Include="Microsoft.AspNet.WebPages" Version="3.2.7" />
+    <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.2.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Http.Extensions" Version="2.2.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Core" Version="2.2.5" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Formatters.Json" Version="2.2.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="3.1.2" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="3.1.2" />
+    <PackageReference Include="Microsoft.Extensions.Http" Version="3.1.2" />
+    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
+    <PackageReference Include="Npgsql" Version="4.1.3.1" />
+    <PackageReference Include="PdfiumViewer" Version="2.13.0" />
+    <PackageReference Include="Spire.Presentation" Version="5.2.1" />
+    <PackageReference Include="sqlSugarCore" Version="5.0.0.11" />
+    <PackageReference Include="System.Drawing.Common" Version="4.7.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\CommonDefine\CommonDefineStandardLib.csproj" />
+    <ProjectReference Include="..\..\Entity\Entity\Entity.csproj" />
+    <ProjectReference Include="..\..\UtilsStandard\UtilsStandardLib.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Lib\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="C:\Users\jin.zhang\.nuget\packages\imageresizer.plugins.pdfiumrenderer.pdfium.dll\1.0.1\build\pdfium.dll" Link="Lib\pdfium.dll" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="C:\Users\xiaolong.zhu.ACN\.nuget\packages\imageresizer.plugins.pdfiumrenderer.pdfium.dll\1.0.1\build\pdfium.dll" Link="Lib\pdfium.dll" />
+  </ItemGroup>
+
+</Project>

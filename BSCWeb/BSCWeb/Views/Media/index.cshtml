@@ -1,0 +1,332 @@
+﻿@{
+    Layout = null;
+    Html.RenderPartial("/Views/Shared/_PartialView.cshtml");
+    @model List<Advantech.Entity.MediaInfo>
+
+}
+<script type="text/javascript" src="~/js/media_main.js"></script>
+<script type="text/javascript">
+    var zTree = null;
+    var setting = {
+        view: {
+            addHoverDom: addHoverDom,
+            removeHoverDom: removeHoverDom,
+            selectedMulti: false
+        },
+        edit: {
+            enable: true,
+            editNameSelectAll: true,
+            showRemoveBtn: showRemoveBtn,
+            showRenameBtn: showRenameBtn
+        },
+        data: {
+            simpleData: {
+                enable: true
+            }
+        },
+        callback: {
+            beforeDrag: beforeDrag,
+            beforeEditName: beforeEditName,
+            beforeRename: beforeRename,
+            beforeRemove: beforeRemove,
+            beforeClick: beforeClick
+        }
+    };
+
+    var dataMaker = function (count) {
+        var nodes = []
+        $.ajax({
+            type: "GET",
+            url: "/Media/ToSelectGroup",
+            async: false,
+            dataType: "JSON",
+            success: function (result) {
+                nodes = result;
+            },
+            error: function (result) {
+            }
+
+        });
+        return nodes;
+    }
+
+    var log, className = "dark";
+    function beforeDrag(treeId, treeNodes) {
+        return false;
+    }
+
+    //是否显示更新按钮
+    function showRenameBtn(treeId, treeNode) {
+        var pId = treeNode.pId;
+        if (pId == null) {
+            return false;
+        }
+        else {
+            return true;
+        }
+    }
+    //触发编辑
+    function beforeEditName(treeId, treeNode) {
+
+        zTree.selectNode(treeNode);
+        setTimeout(function () {
+            if (confirm("确认编辑" + treeNode.name + "吗?")) {
+                setTimeout(function () {
+                    zTree.editName(treeNode);
+                }, 0);
+            }
+        }, 0);
+        return false;
+    }
+    //编辑之后
+    function beforeRename(treeId, treeNode, newName, isCancel) {
+        if (newName.length == 0) {
+            setTimeout(function () {
+                zTree.cancelEditName();
+                alert("节点名称不能为空.");
+            }, 0);
+            return false;
+        }
+        else {
+            if (treeNode.name == newName) {//如果旧名称与新名称一致，无需触发ajax
+                return true;
+            }
+            else {
+                $.ajax({
+                    url: '/Media/ToPutGroup',
+                    data: { id: treeNode.id, mgroup_name: newName },
+                    type: 'post',
+                    dataType: 'json',
+                    async: false,
+                    success: function (data) {
+                        if (data == true) {
+                            return true;
+                        }
+                        else {
+                            return false;
+                        }
+                    },
+                    error: function () {
+                        return false;
+                    }
+                });
+            }
+        }
+    }
+
+    //是否显示删除按钮
+    function showRemoveBtn(treeId, treeNode) {
+        var pId = treeNode.pId;
+        if (pId == null) {
+            return false;
+        }
+        else {
+            return true;
+        }
+    }
+
+    //触发删除
+    function beforeRemove(treeId, treeNode) {
+        if (confirm("确认删除" + treeNode.name + " 吗？")) {
+            //ajax触发数据库修改
+            $.ajax({
+                url: '/Media/ToDelGroup',
+                data: { id: treeNode.id },
+                type: 'post',
+                async: false,
+                dataType: 'json',
+                success: function (data) {
+                    if (data) {
+                        zTree.removeNode(treeNode);
+                    }
+                },
+                error: function () {
+                }
+            });
+        }
+        else {
+            return false;
+        }
+        return false;
+    }
+
+
+    //鼠标移开后触发
+    function removeHoverDom(treeId, treeNode) {
+        $("#addBtn_" + treeNode.tId).unbind().remove();
+    };
+    //判断新增是否可用(处于非顶级)
+    function beforeClick(treeId, treeNode) {
+
+        var media_group_id_old = $("#media_group_id").val();
+        if (media_group_id_old != treeNode.id) {
+            var media_group_id = 0;
+            $("#media_group_id").val(treeNode.id);
+            if (!isNaN(treeNode.id)) {
+                $("#add").removeAttr("disabled");
+                media_group_id = treeNode.id;
+            }
+            else {
+                $("#add").attr({ "disabled": "disabled" });
+            }
+
+            $.ajax({
+                url: '/Media/GetAjaxData',
+                data: { media_group_id: media_group_id },
+                type: 'post',
+                async: false,
+                success: function (data) {
+                    $('#content_medias').html(data);
+                },
+                error: function () {
+                }
+            });
+        }
+
+    }
+
+    //新增后触发
+    var newCount = 1;
+    function addHoverDom(treeId, treeNode) {
+        var sObj = $("#" + treeNode.tId + "_span");
+        if (treeNode.editNameFlag || $("#addBtn_" + treeNode.tId).length > 0) return;
+        var addStr = "<span class='button add' id='addBtn_" + treeNode.tId
+            + "' title='add node' onfocus='this.blur();'></span>";
+        sObj.after(addStr);
+        var btn = $("#addBtn_" + treeNode.tId);
+        if (btn) btn.bind("click", function () {
+            $.ajax({
+                url: '/Media/ToAddGroup',
+                data: { id: treeNode.id, pId: treeNode.pId },
+                type: 'post',
+                dataType: 'json',
+                async: false,
+                success: function (data) {
+                    if (data != false) {
+                        zTree.addNodes(treeNode, { id: data["id"], pId: data["parent_id"], name: data["mgroup_name"] });
+                    }
+                },
+                error: function () {
+                }
+            });
+
+            return false;
+        });
+    };
+
+    $(document).ready(function () {
+        var zNodes = dataMaker();
+        zTree = $.fn.zTree.init($("#ztrees"), setting, zNodes);
+    });
+
+    $(function () {
+        $("#addOneRow").click(function () {
+            var tempTr = $("tr:first").clone(true);
+            $("tr:last").after(tempTr);
+            $("tr:last > td > #name").val("");
+            $("tr:last > td > #address").val("");
+        });
+        $(".delOneRow").click(function () {
+            if ($("tr").length < 2) {
+                alert("至少保留一行!");
+            }
+            else {
+                if (confirm("确认删除?")) {
+                    $(this).parent().parent().remove();
+                }
+            }
+        });
+    });
+</script>
+
+<div class="content">
+    <div class="container-fluid">
+        <div class="page-title-box">
+            <div class="row align-items-center">
+                <div class="col-sm-6">
+                    <h4 class="page-title">媒体管理</h4>
+                </div>
+                <div class="col-sm-6">
+                    <ol class="breadcrumb float-right">
+                        <li class="breadcrumb-item"><a href="javascript:void(0);">BSC</a></li>
+                        <li class="breadcrumb-item active">媒体管理</li>
+                        <li class="breadcrumb-item active">媒体列表</li>
+                    </ol>
+                </div>
+            </div>
+            <!-- end row -->
+        </div>
+        <!-- end page-title -->
+        <div class="content_left">
+            <div class="content_top">
+                <span class="left">目录</span>
+            </div>
+            <div class="content_footer">
+                <ul id="ztrees" class="ztree"></ul>
+            </div>
+
+
+        </div>
+        <div class="content_right">
+            <div class="content_top">
+                <div class="content_top_div">
+                    <span class="left">搜索</span>
+                    <input type="text" value="" class="content_top_text right" placeholder="按名称搜索" oninput="Serch($(this).val())" />
+                </div>
+                <div class="content_top_div">
+                    <span class="left">全选</span>
+                    <input id="selectAll" name="selectAll" type="checkbox" value="" class="content_top_checkbox right" onclick="SelectAll()" />
+                </div>
+                <div class="content_top_div">
+                    <input id="add" type="button" value="新增" class="content_top_button left" disabled="disabled" onclick="ShowDiv()" />
+                    <input id="delete" type="button" value="删除" class="content_top_button right" disabled="disabled" onclick="submitDel()" />
+                    <input type="hidden" value="" id="media_group_id" name="media_group_id" />
+                    <input type="hidden" value="@ViewBag.url_upload" id="url_upload" name="url_upload" />
+                </div>
+
+            </div>
+            <div class="content_footer" id="content_medias">
+                @{
+                    foreach (var itmes in Model)
+                    {
+                        string media_name = Advantech.CoreExtention.Shared.SubStringName(itmes.media_name);
+                        string divId = "content_media_" + itmes.id;
+                        string checkboxClass = "checkbox_" + itmes.id;
+                        <div class="content_media" id="@divId">
+                            <img src="@itmes.preview_address" onclick="SelectFile(@itmes.id)" />
+                            <a href="@itmes.media_address" download="@itmes.media_address" title="媒体名称:@itmes.media_name&#10;媒体类型:@itmes.media_type&#10;上传时间:@itmes.create_time">@media_name</a>
+                            <input id="checkboxs" name="checkboxs" type="checkbox" value="@itmes.id" class="@checkboxClass" />
+                        </div>
+                    }
+                }
+            </div>
+        </div>
+
+
+
+    </div>
+</div>
+<div class="bg"></div>
+<div class="close_div">
+    <a href="#" onclick="HideDiv()"><img src="~/images/close.png" style="width:20px;height:20px" /></a>
+</div>
+<div class="show">
+    <div>
+        <button type="button" class="btn btn-info waves-effect waves-light m-r-5" onclick="path.click()"><i class="far fa-edit"></i>&nbsp;浏览</button>
+        <input type="file" id="path" style="display:none" multiple="multiple" onchange="ChoiceFile()">
+        <button type="button" class="btn btn-danger waves-effect waves-light m-r-5" onclick="DelTr()"><i class="far fa-trash-alt"></i>&nbsp;移除</button>
+        <button type="button" class="btn btn-success waves-effect waves-light m-r-5" onclick="SubmitUpload(0)"><i class="far fa-file-alt"></i>&nbsp;上传</button>
+        <span id="file_state" name="file_state"></span>
+    </div>
+    <table id="tb">
+        <thead>
+            <tr>
+                <th> <input id="checkAll" name="checkAll" type="checkbox" value="" /></th>
+                <th>档案名称</th>
+                <th>上传进度</th>
+                <th>上传结果</th>
+            </tr>
+        </thead>
+    </table>
+</div>
+

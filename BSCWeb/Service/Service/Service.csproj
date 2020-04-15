@@ -1,0 +1,15 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <RootNamespace>Advantech.Service</RootNamespace>
+    <AssemblyName>Advantech.Service</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\Entity\Entity\Entity.csproj" />
+    <ProjectReference Include="..\..\CommonExtention\CommonExtention.csproj" />
+    <ProjectReference Include="..\..\Repository\Repository\Repository.csproj" />
+  </ItemGroup>
+
+</Project>

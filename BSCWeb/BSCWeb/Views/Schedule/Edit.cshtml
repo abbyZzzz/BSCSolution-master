@@ -1,0 +1,287 @@
+﻿
+@{
+    Layout = null;
+    @using Advantech.Entity.Schedule;
+
+    @model List<ProgramScheduleTime>
+}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="content-type" content="text/html; charset=gb2312">
+
+    <link href="~/assets/css/jquery-ui.css" rel="stylesheet" />
+    <link href="~/plugins/fullcalendar/css/fullcalendar.min.css" rel="stylesheet" />
+    <link href="~/assets/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="/assets/css/metismenu.min.css" rel="stylesheet" type="text/css">
+    <link href="~/lib/select2/select2.min.css" rel="stylesheet" />
+    <link href="/assets/css/icons.css" rel="stylesheet" type="text/css">
+    <link href="/assets/css/style.css" rel="stylesheet" type="text/css">
+    <link href="~/lib/toastr.js/toastr.min.css" rel="stylesheet" />
+
+    <style>
+        #list ul {
+            width: 570px;
+            max-height: 800px;
+        }
+
+        #list ul li {
+            width: 150px;
+            float: left;
+        }
+    </style>
+</head>
+
+
+<body>
+    <div class="content">
+        <div class="container-fluid">
+            <div class="page-title-box">
+                <div class="row align-items-center">
+                    <div class="col-sm-6">
+                        <h4 class="page-title">时间管理</h4>
+                    </div>
+                    <div class="col-sm-6">
+                        <ol class="breadcrumb float-right">
+                            <li class="breadcrumb-item"><a href="javascript:void(0);">时间管理</a></li>
+                            <li class="breadcrumb-item active">播放排程</li>
+                        </ol>
+                    </div>
+                </div> <!-- end row -->
+            </div>
+            <!-- end page-title -->
+
+            <div class="row">
+                <div class="col-12">
+                    <div class="card m-b-30">
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-sm-10">
+                                    <div class="form-group row">
+                                        <label class="col-sm-1 col-form-label" style="max-width:5%">标题</label>
+                                        <div class="col-sm-2">
+                                            <input class="form-control" type="text" id="schedule_name" value="@ViewBag.scheduleName" />
+                                            <input class="form-control" type="hidden" id="schedule_id" value="@ViewBag.scheduleId" />
+                                        </div>
+                                        <label class="col-sm-2 col-form-label" style="max-width:7%">预设日程</label>
+                                        <div class="col-sm-2">
+                                            <input class="form-control" type="hidden" id="defaultProgram" value="@ViewBag.defaultProgram" />
+                                            <select class="form-control" id="default" style="height:50px">
+                                                <option value="">-选择-</option>
+                                                @{
+
+                                                    if (ViewBag.scheduleDays.Count > 0)
+                                                    {
+                                                        foreach (var items in ViewBag.scheduleDays)
+                                                        {
+                                                            <option value="@items.id">@items.schedule_name</option>
+                                                        }
+                                                    }
+                                                }
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-sm-2">
+                                    <a class="btn btn-primary" href="/Schedule/Index" style="float:right"><i class="fas fa-sign-out-alt"></i>  退出</a>
+                                    <span style="margin:1px 5px;float:right"></span>
+                                    <button class="btn btn-primary" onclick="saveInfo()" style="float:right"><i class="ti-save"></i>  保存</button>
+
+
+                                </div>
+                            </div>
+                            <div class="row">
+                                @*<div style="border: 1px solid #ececec;background: #f9f9f9;">
+                                    <label>预设日程：</label>
+                                    <div id="default" ondragover="dragOver(event)" ondrop="onDrop(event)" style="width:150px;height:120px;border:1px dashed gray;margin:10px">
+
+                                    </div>
+                                </div>*@
+                                <div style="margin:0px 5px">
+                                    <label>日程列表：</label>
+                                </div>
+                                <div id="list" style="border: 1px solid #ececec;background: #f9f9f9;">
+                                    <ul id='external-events'>
+                                        @{
+
+                                            if (ViewBag.scheduleDays.Count > 0)
+                                            {
+                                                foreach (var items in ViewBag.scheduleDays)
+                                                {
+                                                    <li class='fc-event'>@items.schedule_name</li>
+                                                }
+                                            }
+                                        }
+
+                                    </ul>
+                                </div>
+
+
+                                <div id='calendar' class="col-xl-7 col-lg-8 col-md-9" style="border: 1px solid #ececec;background: #f9f9f9;margin:0px 10px"></div>
+
+                            </div>
+                            <!-- end row -->
+
+                        </div>
+                    </div>
+                </div> <!-- end col -->
+            </div> <!-- end row -->
+
+            <div class="modal fade" id="myDelModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="myModalLabel">
+                                删除
+                            </h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                                &times;
+                            </button>
+
+                        </div>
+                        <div class="modal-body">
+                            <input type="hidden" id="eventId" />
+                            是否确认删除？
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                                关闭
+                            </button>
+                            <button type="button" class="btn btn-primary" id="confirmDelete">
+                                确认
+                            </button>
+                        </div>
+                    </div><!-- /.modal-content -->
+                </div><!-- /.modal -->
+            </div>
+
+        </div>
+        <!-- container-fluid -->
+        <script>
+
+        </script>
+    </div>
+    <!-- content -->
+    <script src="/assets/js/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.min.js"></script>
+    <script src="~/lib/toastr.js/toastr.min.js"></script>
+    <script src="~/plugins/jquery-ui/jquery-ui.min.js"></script>
+    <script src="~/plugins/moment/moment.js"></script>
+    <script src="~/plugins/fullcalendar/js/fullcalendar.min.js"></script>
+    <script src="~/assets/pages/calendar-init.js"></script>
+    <script src="~/lib/select2/select2.min.js"></script>
+    <script>
+        toastr.options = {
+            "closeButton": true,//显示关闭按钮
+            "positionClass": "toast-bottom-right",//弹出的位置
+            "showDuration": "300",//显示的时间
+            "hideDuration": "2000",//消失的时间
+            "timeOut": "5000",//停留的时间
+            "extendedTimeOut": "1000",//控制时间
+            "showEasing": "swing",//显示时的动画缓冲方式
+            "hideEasing": "linear",//消失时的动画缓冲方式
+            "showMethod": "fadeIn",//显示时的动画方式
+            "hideMethod": "fadeOut"//消失时的动画方式
+        };
+        $(function () {
+            var defaultProgram = $("#default").select2();
+            var nameValue = $("#defaultProgram").val();
+            defaultProgram.val(nameValue).trigger("change");
+            defaultProgram.change();
+        })
+        
+
+        function saveInfo() {
+            var myevents = [];
+            var evt = $('#calendar').fullCalendar('clientEvents');
+            var schedule_name = $('#schedule_name').val();
+            var schedule_id = $('#schedule_id').val();
+            var default_program_id = $('#default').val();
+
+            $.each(evt, function (key, value) {
+                var end = "";
+                if (value.end == null) {
+                    end = value.start._d;
+                } else {
+                    end = value.end._d;
+                }
+                myevents.push({
+                    title: value.title,
+                    start: value.start._d,
+                    end: end
+                });
+            });
+
+            if (schedule_name == "") {
+                toastr.error("标题名称不能为空！");
+            } else {
+                $.ajax({
+                    type: "POST",
+                    url: "/Schedule/EditHandle",
+                    data: {
+                        schedule_name: schedule_name,
+                        schedule_id: schedule_id,
+                        default_program_id: default_program_id,
+                        myevents: JSON.stringify(myevents)
+                    },
+                    async: false,
+                    dataType: "JSON",
+                    success: function (msg) {
+                        
+                        if (msg == "Success") {
+                            toastr.success("保存成功！");
+                        } else if (msg == "Repeat") {
+                            toastr.error("标题名称不能重复！");
+                        } else {
+                            toastr.error("保存失败！");
+                        }
+                    },
+                    error: function (msg) {
+                        toastr.error("保存失败！");
+                    }
+                });
+            }
+            
+
+        }
+
+
+
+        function fixEvtNullEnd(evt) {
+            if (evt.end == null) {
+                evt.end = new Date();
+                evt.end.setTime(evt.start.getTime());
+            }
+        }
+
+        function dropEvt(evt) {
+
+            fixEvtNullEnd(evt);
+            // remove all old events that were covered inside of the new event
+            $('#calendar').fullCalendar('removeEvents', function (event) {
+                var eventres = {
+                    title: event.title,
+                    start: event.start._d,
+                    allDay: event.allDay,
+                    end: ""
+                }
+
+                //避免删除自身排程
+                if (eventres.title == evt.title && eventres.start.getTime() == evt.start.getTime() &&
+                    eventres.allDay == evt.allDay && eventres.end == "") {
+                    return false; // self-excluded
+                }
+                fixEvtNullEnd(eventres);
+                //删除同一天中自身以外的排程
+                if (eventres.start.getTime() == evt.start.getTime()) {
+                    return true;
+                }
+            });
+
+
+        }
+
+    </script>
+</body>
+<!-- Start content -->
+</html>

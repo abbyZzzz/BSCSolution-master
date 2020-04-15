@@ -1,0 +1,14 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <RootNamespace>Advantech.Repository</RootNamespace>
+    <AssemblyName>Advantech.Repository</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\Entity\Entity\Entity.csproj" />
+    <ProjectReference Include="..\..\CommonExtention\CommonExtention.csproj" />
+  </ItemGroup>
+
+</Project>

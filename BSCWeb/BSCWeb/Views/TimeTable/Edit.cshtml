@@ -1,0 +1,867 @@
+﻿@{
+    Layout = null;
+    Html.RenderPartial("/Views/Shared/_PartialView.cshtml");
+    @model List<Advantech.Entity.MediaInfo>
+
+}
+
+<script type="text/javascript" src="~/js/media_main.js"></script>
+<script type="text/javascript">
+    var tag = 0;
+    var num = 0;
+    //div的拖拉
+    var theobject = null; //This gets a value as soon as a resize start
+    //对象初始化
+    function resizeObject() {
+        this.el = null; //pointer to the object
+        this.dir = "";      //type of current resize (n, s, e, w, ne, nw, se, sw)
+        this.grabx = null;     //Some useful values
+        this.graby = null;
+        this.width = null;
+        this.left = null;
+        this.xMin = null;//div左端所能到达的位置
+        this.xMax = null;//div右端所能到达的位置
+    }
+    //鼠标放下动作
+    function doDown() {
+        var el = getReal(event.srcElement, "className", "ui-resizable-handle ui-resizable-e");
+        theobject = new resizeObject();
+
+        if (el.className == "ui-resizable-handle ui-resizable-e") {
+            theobject.dir = "e";
+        }
+        else if (el.className == "ui-resizable-handle ui-resizable-w") {
+            theobject.dir = "w";
+        } else {
+            theobject = null;
+            return;
+        }
+
+        //获取点击的className为program的元素
+        var eprogram = getReal(event.srcElement, "className", "program");
+        theobject.el = eprogram;
+        
+        theobject.grabx = window.event.clientX;
+        theobject.graby = window.event.clientY;
+        theobject.width = eprogram.offsetWidth;
+        theobject.left = eprogram.offsetLeft;
+        theobject.xMin = getLeftRight(theobject.left)[0];
+        theobject.xMax = getLeftRight(theobject.left)[1];
+
+        window.event.returnValue = false;
+        window.event.cancelBubble = true;
+    }
+
+    //获取所选对象的左右以限定移动的边界
+    function getLeftRight(objLeft) {
+        var allProgram = document.getElementsByClassName("program");
+        var xMin = 0;
+        var xMax = 0;
+        var leftMin = [];
+        var leftMax = [];
+        var res = [];
+        for (var i = 0; i < allProgram.length; i++) {
+            var left = parseInt(allProgram[i].style.left.replace("px", ""));
+            var width = parseInt(allProgram[i].style.width.replace("px", ""));
+            if (left < objLeft) {
+                leftMin.push(left + width);
+            } else if (left > objLeft) {
+                leftMax.push(left);
+            }
+        }
+        if (leftMin.length > 0) {
+            xMin = Math.max(...leftMin);
+
+        } else {
+            xMin = 0;
+        }
+        if (leftMax.length > 0) {
+            xMax = Math.min(...leftMax);
+        } else {
+            xMax = 920;
+        }
+        res.push(xMin);
+        res.push(xMax);
+        return res
+    }
+    //鼠标抬起动作
+    function doUp() {
+        if (theobject != null) {
+            theobject = null;
+        }
+    }
+    //鼠标移动动作
+    function doMove() {
+
+        var minWidth = 10;
+
+        //Dragging starts here
+        if (theobject != null) {
+
+            if (theobject.dir == "e") {
+                if (theobject.width + window.event.clientX - theobject.grabx < minWidth) {
+                    theobject.el.style.width = minWidth+"px";
+                } else if (theobject.width + window.event.clientX - theobject.grabx > theobject.xMax- theobject.left) {
+                    theobject.el.style.width = theobject.xMax-theobject.left+"px";
+                }
+                else {
+                    theobject.el.style.width = theobject.width + window.event.clientX - theobject.grabx+"px";
+                }
+                document.getElementById("" + theobject.el.id + "start_time").value = getStartEnd(theobject.el.style.left, theobject.el.style.width)[0];
+                document.getElementById("" + theobject.el.id + "end_time").value = getStartEnd(theobject.el.style.left, theobject.el.style.width)[1];
+            }
+                
+            if (theobject.dir == "w") {
+                if (theobject.left + window.event.clientX - theobject.grabx <= theobject.xMin) {
+                    theobject.el.style.left = theobject.xMin+"px";
+                } else if (theobject.left + window.event.clientX - theobject.grabx >= theobject.left + theobject.width - minWidth) {
+                    theobject.el.style.left = theobject.left + theobject.width - minWidth + "px";
+                } else {
+                    theobject.el.style.left = theobject.left + window.event.clientX - theobject.grabx+"px";
+                }
+
+
+                if (theobject.width - window.event.clientX + theobject.grabx <= minWidth) {
+                    theobject.el.style.width = minWidth + "px";
+                } else if (theobject.width - window.event.clientX + theobject.grabx >= theobject.left + theobject.width-theobject.xMin) {
+                    theobject.el.style.width = theobject.left + theobject.width - theobject.xMin + "px"; 
+                } else {
+                    theobject.el.style.width = theobject.width - window.event.clientX + theobject.grabx;
+                }
+
+                document.getElementById("" + theobject.el.id + "start_time").value = getStartEnd(theobject.el.style.left, theobject.el.style.width)[0];
+                document.getElementById("" + theobject.el.id + "end_time").value = getStartEnd(theobject.el.style.left, theobject.el.style.width)[1];
+            }
+
+            window.event.returnValue = false;
+            window.event.cancelBubble = true;
+        }
+    }
+
+    //获取元素
+    function getReal(el, type, value) {
+        temp = el;
+        while ((temp != null) && (temp.tagName != "BODY")) {
+            if (eval("temp." + type) == value) {
+                el = temp;
+                return el;
+            }
+            temp = temp.parentElement;
+        }
+        return el;
+    }
+
+    //获取节目的开始结束时间
+    function getStartEnd(left, width) {
+        var leftRes = parseInt(left.replace("px", ""));
+        var widthRes = parseInt(width.replace("px", ""));
+        var all = leftRes + widthRes;
+        res = [];
+        
+        res_start = getStandard(parseInt(leftRes * (1440 / 920) / 60)) + ":" + getStandard(parseInt((leftRes * (1440 / 920)) % 60))+":00";
+        if (all != 920) {
+            res_end = getStandard(parseInt(all * (1440 / 920) / 60)) + ":" + getStandard(parseInt((all * (1440 / 920)) % 60)) + ":00";
+        }
+        else {
+            res_end = "23:59:59";
+        }
+
+        res.push(res_start);
+        res.push(res_end);
+        return res;
+    }
+
+    //将小于10的数加0
+    function getStandard(min) {
+        if (min < 10) {
+            return "0" + min;
+        } else {
+            return min;
+        }
+    }
+
+    document.onmousedown = doDown;
+    document.onmouseup = doUp;
+    document.onmousemove = doMove;
+    //------------------------------------------------
+    //目标
+    conatiner = document.getElementById('timeline');
+    //拖拽开始
+    function dragStart(e, id) {
+        var clickId ="program" + num;
+        document.getElementById("add").innerHTML = "<div id = 'program" + num + "' name='" + id + "' class='program' onclick='programChoose(" + clickId+")' ondragover='programDragOver(event)' ondrop='programOnDrop(event)'>" +
+            "<div class='ui-resizable-handle ui-resizable-e' style='z-index:90;'></div>" +
+            "<div class='ui-resizable-handle ui-resizable-w' style='z-index:90;'></div>" +
+            "</div >";
+        var image = document.getElementById("dragImg");
+        e.dataTransfer.setDragImage(image, 10, 50);//修改鼠标的样式
+        e.dataTransfer.setData('id',"program" + num );//传递的id和div
+    }
+
+    function programDragOver(e) {
+        e.preventDefault();
+    }
+
+    //节目不允许重叠
+    function programOnDrop(e) {
+        e.preventDefault();
+        toastr.error("该时段已无空位");
+        tag = 1;
+    }
+
+    //目标对象容许被拖拽元素拖拽进来 默认不容许
+    function dragOver(e) {
+        e.preventDefault();
+    }
+
+    //目标对象接受被拖拽元素放下
+    function onDrop(e) {
+        if (tag == 0) {
+            const id = e.dataTransfer.getData('id');
+            const goal = document.getElementById(id);           
+            
+            goal.style.left = e.clientX - 384 + "px";
+            goal.style.width = "25px";
+
+            e.target.appendChild(goal);
+
+            var name = (goal.getAttribute("name")).split(':')[1].replace("content_name_", "").split('.')[0];
+            addRow(goal.id,
+                name,
+                getStartEnd(goal.style.left, goal.style.width)[0],
+                getStartEnd(goal.style.left, goal.style.width)[1]);
+
+            programChoose(goal);
+
+            addSelect(name)
+
+        } else {
+            tag = 0;
+        }
+        num++;
+        
+    }
+
+    //节目选中操作
+    function programChoose(id) {
+        var programs = document.getElementsByClassName("program");
+        var inputs = document.getElementsByClassName("inputList");
+        var buttons = document.getElementsByClassName("click btn btn-primary");
+        var start_inputs = document.getElementsByClassName("start form-control");
+        var end_inputs = document.getElementsByClassName("end form-control");
+        
+        //修改选中节目方块的颜色
+        for (var i = 0; i < programs.length; i++) {
+            if (programs[i].id != id.id && programs[i].id != id) {
+                programs[i].style.background = "#7bc2e4d1";
+                programs[i].style.border = "1px solid gray";
+                programs[i].innerHTML = "";
+            } else {
+                programs[i].style.background = "rgb(255, 0, 0)";
+                programs[i].style.border = "2px solid gray";
+                programs[i].innerHTML = "<div class='ui-resizable-handle ui-resizable-e' style='z-index:90;'></div>" +
+                    "<div class='ui-resizable-handle ui-resizable-w' style='z-index:90;'></div>";
+            }
+        }
+        //修改选中节目
+        for (var i = 0; i < inputs.length; i++) {
+            if ((inputs[i].id).replace("input", "") != id.id && (inputs[i].id).replace("input", "") != id) {
+                inputs[i].style.background = "#ffffff";
+                buttons[i].disabled = true;
+                start_inputs[i].disabled = true;
+                end_inputs[i].disabled = true;
+            } else {
+                inputs[i].style.background = "rgb(255, 204, 204)";
+                buttons[i].disabled = false;
+                start_inputs[i].disabled = false;
+                end_inputs[i].disabled = false; 
+            }
+        }
+        
+    }
+
+    //----------------------------bootstrap table操作--------------
+    //新增一行数据
+    function addRow(id,name,start_time,end_time) {
+        var programList = document.getElementById("programList");
+        appendContent = document.createElement('li');
+        appendContent.className ="inputList";
+        appendContent.id = id + "input";
+        appendContent.setAttribute("name",name);
+        appendContent.innerHTML = "<div class='form-group row' style = 'margin-bottom:0px' >" +
+            "<label class='col-sm-1 col-form-label label-short1'>" + name+"</label>" +
+            "<label class='col-sm-1 col-form-label label-short1'>开始时间：</label>" +
+            "<div class='col-sm-2 input-short'>" +
+            "<input class='start form-control' type='time' id='" + id + "start_time' value='" + start_time + "' onchange=\"changeStartTime('" + id + "start_time', '" + id + "end_time')\" />" +
+            "</div>" +
+            "<label class='col-sm-1 col-form-label label-short1'>结束时间：</label>" +
+            "<div class='col-sm-2 input-short'>" +
+            "<input class='end form-control' type='time' id='" + id + "end_time' value='" + end_time + "' onchange=\"changeEndTime('" + id + "start_time', '" + id + "end_time')\" />" +
+            "</div>" +
+            "<div class='col-sm-2 input-short'>" +
+            "<button id='" + id + "button' class='click btn btn-primary'onclick='removeProgram("+id+","+id+")' data-toggle='modal' data-target='#myDelModal'><i class='far fa-trash-alt'></i>  删除</button>" +
+            "</div>" +
+            "</div > <hr class='hrstyle' />";
+        programList.appendChild(appendContent);
+    }
+
+    //增加下拉框
+    function addSelect(name) {
+        $("#channel").append("<option value=" + name + ">" + name+"</option>");
+    }
+    //删除节目
+    function removeProgram(id, name) {
+        if (typeof (id.id) == 'undefined') {
+            document.getElementById("deleteId").value = id;
+        } else {
+            document.getElementById("deleteId").value = id.id;
+        }    
+    }
+    //确认删除节目
+    function ConfirmDelete() {
+        var id = $("#deleteId").val();
+        var programContainer = document.getElementById("programContainer");
+        var programRect = document.getElementById(id.id);
+        var programRect1 = document.getElementById(id);
+        if (typeof (id.id) == 'undefined') {
+            programContainer.removeChild(programRect1);
+        } else {
+            programContainer.removeChild(programRect);
+        }
+
+
+        var programList = document.getElementById("programList");
+        var programInput = document.getElementById(id.id + "input");
+        var programInput1 = document.getElementById(id + "input");
+        if (typeof (id.id) == 'undefined') {
+            programList.removeChild(programInput1);
+        } else {
+            programList.removeChild(programInput);
+        }
+
+        $("#myDelModal").modal("hide");
+        toastr.success("删除成功！");
+    }
+
+    //当input中开始时间变化时
+    function changeStartTime(start_id, end_id) {
+        var start_value = document.getElementById(start_id).value;
+        var end_value = document.getElementById(end_id).value;
+
+        var start_id = start_id.replace("start_time", "");
+        var start_content = document.getElementById(start_id);
+        var objLeft = parseInt((start_content.style.left).replace("px", ""));
+        var xMin = getLeftRight(objLeft)[0];
+        var fixedLength = 0;
+        var left = 0;
+
+        var start_hour = 0;
+        var start_minute = 0;
+        var end_hour = 0;
+        var end_minute = 0;
+
+        start_hour = parseInt(start_value.split(':')[0]);
+        start_minute = parseInt(start_value.split(':')[1]);
+
+        end_hour = parseInt(end_value.split(':')[0]);
+        end_minute = parseInt(end_value.split(':')[1]);
+
+        if (!isNaN(start_hour) && !isNaN(start_minute) &&
+            !isNaN(end_hour) && !isNaN(end_minute)) {
+            if (start_hour > end_hour) {
+                toastr.error("开始时间不能大于结束时间");
+                document.getElementById(start_id).value = end_hour + ":" + start_minute;
+            } else if (start_hour == end_hour && start_minute > end_minute) {
+                document.getElementById(start_id).value = end_hour + ":" + end_minute-1;
+                toastr.error("开始时间不能大于结束时间");
+            } else {
+                //left和width与时间变化的对应关系
+                fixedLength = parseInt((end_hour * 60 + end_minute) * 920 / 1440);//右端固定
+                left = parseInt((start_hour * 60 + start_minute) * 920 / 1440);
+                if (fixedLength - left <= 10) {
+                    left = fixedLength - 10;
+                    width = 10;
+                } else if (left <= xMin) {
+                    left = xMin;
+                    width = fixedLength - xMin;
+                    toastr.error("节目不能重复，请重新选择时间！");
+
+                }
+                else {
+                    width = fixedLength - left;
+                }
+
+                start_content.style.left = left + "px";
+                start_content.style.width = width + "px";
+            }
+        }
+    }
+    //当input中结束时间变化时
+    function changeEndTime(start_id, end_id) {
+        var start_value = document.getElementById(start_id).value;
+        var end_value = document.getElementById(end_id).value;
+        var start_id = start_id.replace("start_time", "");
+        var start_content = document.getElementById(start_id);
+
+        var objLeft = parseInt((start_content.style.left).replace("px", ""));
+        var xMax = getLeftRight(objLeft)[1];
+        var fixedLength = 0;
+        var right = 0;
+
+        var start_hour = 0;
+        var start_minute = 0;
+        var end_hour = 0;
+        var end_minute = 0;
+
+        start_hour = parseInt(start_value.split(':')[0]);
+        start_minute = parseInt(start_value.split(':')[1]);
+
+        end_hour = parseInt(end_value.split(':')[0]);
+        end_minute = parseInt(end_value.split(':')[1]);
+
+        if (!isNaN(start_hour) && !isNaN(start_minute) &&
+            !isNaN(end_hour) && !isNaN(end_minute)) {
+            if (start_hour > end_hour) {
+                toastr.error("开始时间不能大于结束时间！");
+                document.getElementById(start_id).value = end_hour + ":" + start_minute;
+            } else if (start_hour == end_hour && start_minute > end_minute) {
+                document.getElementById(start_id).value = end_hour + ":" + end_minute - 1;
+                toastr.error("开始时间不能大于结束时间！");
+            } else {
+                //left和width与时间变化的对应关系
+                fixedLength = parseInt((start_hour * 60 + start_minute) * 920 / 1440);//右端固定
+                right = parseInt((end_hour * 60 + end_minute) * 920 / 1440);
+                if (right-fixedLength <= 10) {
+                    width = 10;
+                } else if (right >= xMax) {
+                    width = xMax - fixedLength;
+                    toastr.error("节目不能重复，请重新选择时间！");
+
+                }
+                else {
+                    width = right- fixedLength;
+                }
+                start_content.style.width = width + "px";
+            }
+        }
+    }
+    //------------------------------树形结构操作---------------------
+    //树形结构
+    var zTree = null;
+    var setting = {
+        view: {
+            selectedMulti: false
+        },
+        edit: {
+            enable: false,
+            editNameSelectAll: false,
+            showRemoveBtn: false,
+            showRenameBtn: false
+        },
+        data: {
+            simpleData: {
+                enable: true
+            }
+        },
+        callback: {
+            beforeDrag: false,
+            beforeClick: fileClick
+        }
+    };
+
+    var dataMaker = function (count) {
+        var nodes = []
+        $.ajax({
+            type: "GET",
+            url: "/Media/ToSelectGroup",
+            async: false,
+            dataType: "JSON",
+            success: function (result) {
+                nodes = result;
+            },
+            error: function (result) {
+            }
+
+        });
+        return nodes;
+    }
+
+    function beforeDrag(treeId, treeNodes) {
+        return false;
+    }
+    //判断新增是否可用(处于非顶级)
+    function fileClick(treeId, treeNode) {
+        //console.log(treeNode)
+        var media_group_id_old = $("#media_group_id").val();
+        if (media_group_id_old != treeNode.id) {
+            var media_group_id = 0;
+            $("#media_group_id").val(treeNode.id);
+            if (!isNaN(treeNode.id)) {
+                media_group_id = treeNode.id;
+            }
+
+            $.ajax({
+                url: '/TimeTable/GetAjaxData',
+                data: { media_group_id: media_group_id },
+                type: 'post',
+                async: false,
+                success: function (data) {
+                    $('#content_medias').html(data);
+                },
+                error: function () {
+                }
+            });
+        }
+
+    }
+
+    $(document).ready(function () {
+        var zNodes = dataMaker();
+        zTree = $.fn.zTree.init($("#ztrees"), setting, zNodes);
+    });
+
+    function saveInfo() {
+        var flag = 0;
+        var schedule_name = $('#schedule_name').val();
+        var id = $('#schedule_id').val();
+
+        var programList = document.getElementsByClassName("program"); 
+        var startList = document.getElementsByClassName("start form-control");
+        var endList = document.getElementsByClassName("end form-control");
+        var programId = new Array();
+        var programNameId = new Array();
+        var programStart = new Array();
+        var programEnd = new Array();
+
+        for (var i = 0; i < programList.length; i++) {
+            //var midPar = getStartEnd(programList[i].style.left, programList[i].style.width)
+            programId.push(programList[i].id);
+            programNameId.push(programList[i].getAttribute("name").split(":")[0].replace("content_media_", ""));
+            programStart.push(startList[i].value);
+            programEnd.push(endList[i].value);
+            if (startList[i].value >= endList[i].value) {
+                flag = 1;
+            }
+        }
+
+        var programIdRes = programId.join(',');
+        var programNameIdRes = programNameId.join(',');
+        var programStartRes = programStart.join(',');
+        var programEndRes = programEnd.join(',');
+
+
+        if (schedule_name == "") {
+            toastr.error("标题名称不能为空！");
+        } else if (flag==1) {
+            toastr.error("开始时间必须小于结束时间！");
+        }else {
+            $.ajax({
+                type: "POST",
+                url: "/TimeTable/EditHandle",
+                data: {
+                    group_id: 1,
+                    user_id: 1,
+                    id: id,
+                    schedule_name: schedule_name,
+                    programIdRes: programIdRes,
+                    programNameIdRes: programNameIdRes,
+                    programStartRes: programStartRes,
+                    programEndRes: programEndRes
+                },
+                async: false,
+                dataType: "JSON",
+                success: function (result) {
+                    if (result == "Success") {
+                        toastr.options = {
+                            "closeButton": true,//显示关闭按钮
+                            "positionClass": "toast-bottom-right",//弹出的位置
+                            "showDuration": "300",//显示的时间
+                            "hideDuration": "1000",//消失的时间
+                            "timeOut": "2000",//停留的时间
+                        };
+                        toastr.options.onHidden = function () {
+                            window.location.href = "/TimeTable/Index";
+                        }
+                        toastr.success("更新成功！");
+                        
+                        
+                    } else if (result == "Fail") {
+                        toastr.error("更新失败！");
+
+                    } else {
+                        toastr.error("标题名称重复，请重新填写！");
+                    }
+                },
+                error: function (result) {
+                }
+
+            });
+
+        }   
+    }
+
+    function selectChange(program) {
+        
+        var programs = document.getElementsByClassName("program");
+        var inputs = document.getElementsByClassName("inputList");
+        var buttons = document.getElementsByClassName("click btn btn-primary");
+        var start_inputs = document.getElementsByClassName("start form-control");
+        var end_inputs = document.getElementsByClassName("end form-control");
+        
+        //修改选中节目方块的颜色
+        for (var i = 0; i < programs.length; i++) {
+            if (programs[i].getAttribute("name").split(':')[1].replace("content_name_", "").split('.')[0] != program) {
+                programs[i].style.background = "#7bc2e4d1";
+                programs[i].style.border = "1px solid gray";
+                programs[i].innerHTML = "";
+            } else {
+                programs[i].style.background = "rgb(255, 0, 0)";
+                programs[i].style.border = "2px solid gray";
+                programs[i].innerHTML = "<div class='ui-resizable-handle ui-resizable-e' style='z-index:90;'></div>" +
+                    "<div class='ui-resizable-handle ui-resizable-w' style='z-index:90;'></div>";
+            }
+        }
+        //修改选中节目
+        for (var i = 0; i < inputs.length; i++) {
+
+            if (inputs[i].getAttribute("name") != program) {
+                inputs[i].style.background = "#ffffff";
+                buttons[i].disabled = true;
+                start_inputs[i].disabled = true;
+                end_inputs[i].disabled = true;
+            } else {
+                inputs[i].style.background = "rgb(255, 204, 204)";
+                buttons[i].disabled = false;
+                start_inputs[i].disabled = false;
+                end_inputs[i].disabled = false;
+            }
+        }
+
+    }
+</script>
+<div class="content" style="max-height:1000px;overflow-y:overlay;">
+    <div class="container-fluid">
+        <div class="page-title-box">
+            <div class="row align-items-center">
+                <div class="col-sm-6">
+                    <h4 class="page-title">时刻表管理</h4>
+                </div>
+                <div class="col-sm-6">
+                    <ol class="breadcrumb float-right">
+                        <li class="breadcrumb-item"><a href="javascript:void(0);">BSC</a></li>
+                        <li class="breadcrumb-item active">时刻表管理</li>
+                        <li class="breadcrumb-item active">单日时刻表</li>
+                    </ol>
+                </div>
+            </div>
+            <!-- end row -->
+        </div>
+        <!-- end page-title -->
+        <div class="row">
+            <div class="col-sm-12">
+                <div class="card-body">
+                    <div class="content_top row align-items-center" style="margin-left: 0px;margin-right:0px;height: 60px;line-height:6vh;">
+                        <div class="col-sm-10">
+                            <div class="form-group row" style="margin-bottom:0px">
+                                <label class="col-sm-1 col-form-label label-short">标题</label>
+                                <div class="col-sm-2 input-short">
+                                    <input class="form-control" type="text" id="schedule_name" value="@ViewBag.scheduleName" />
+                                    <input class="form-control" type="hidden" id="schedule_id" value="@ViewBag.scheduleId" />
+                                </div>
+                                <label class="col-sm-1 col-form-label label-short">节目</label>
+                                <div class="col-sm-2 input-short">
+                                    <select class="form-control" id="channel" onchange="selectChange(this.options[this.options.selectedIndex].value)" >
+                                        <option value="-">-请选择-</option>
+                                        @{
+
+                                            if (ViewBag.scheduleDayPrograms.Count > 0)
+                                            {
+                                                foreach (var itmes in ViewBag.scheduleDayPrograms)
+                                                {     
+                                                    <option value="@itmes.program_name">@itmes.program_name</option>
+                                                }
+                                            }
+                                        }
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-sm-2" style="padding-left:100px">
+                            <button class="btn btn-primary" onclick="saveInfo()"><i class="ti-save"></i>  保存</button>
+                            <a class="btn btn-primary" href="/TimeTable/Index"><i class="fas fa-sign-out-alt"></i>  退出</a>
+                        </div>
+
+                    </div>
+                    <div class="content_footer" align="center" style="height:140px;">
+                        <div>
+                            <img src="~/assets/images/time.png" />
+                        </div>
+                        <div id="add" style="display:none"></div>
+
+                        <div id="timeline">
+                            <div style="padding-top:18px">
+                                请拖拽节目至此
+                            </div>
+                            <div style="position:absolute; z-index: -1;top:90px;">
+                                <img src="~/images/drag.png" class="hidden" id="dragImg" />
+                            </div>
+
+                        </div>
+                        <div id="programContainer" class="timeline2" ondragover="dragOver(event)" ondrop="onDrop(event)">
+                            @{
+                                if (ViewBag.scheduleDayPrograms.Count > 0)
+                                {
+                                    foreach (var itmes in ViewBag.scheduleDayPrograms)
+                                    {
+                                        string [] start = itmes.start_time.Split(':');
+                                        string [] end = itmes.end_time.Split(':');
+                                        string left= (Convert.ToInt32(start[0]) * 60 + Convert.ToInt32(start[1])) * 920 / 1440+"px";
+                                        string width=(Convert.ToInt32(end[0]) * 60 + Convert.ToInt32(end[1])) * 920 / 1440-(Convert.ToInt32(start[0]) * 60 + Convert.ToInt32(start[1])) * 920 / 1440 +"px";
+
+                                        string name = "content_media_" + itmes.id+":content_name_"+ itmes.program_name;
+                                        <div id='@itmes.id' name='@name' class='program' style="left:@left;width:@width;background:rgba(123, 194, 228, 0.82)" onclick='programChoose(@itmes.id)' ondragover='programDragOver(event)' ondrop='programOnDrop(event)'>
+                                            <div class='ui-resizable-handle ui-resizable-e' style='z-index:90;'></div>
+                                            <div class='ui-resizable-handle ui-resizable-w' style='z-index:90;'></div>
+                                        </div> 
+                                    }
+                                }
+                            }   
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="row">
+            <div class="col-sm-12">
+                <div class="card-body">
+                    <div class="content_top row align-items-center" style="margin-left: 0px;margin-right:0px;height: 50px;">
+                        <div class="col-sm-10">
+                            <div class="form-group row" style="margin-bottom:0px">
+                                <label class="col-sm-1 col-form-label label-short1">节目详情</label>
+                            </div>
+                        </div>
+
+                    </div>
+                    <div class="content_footer" align="center">
+                        <ol id="programList" style="min-height:50px;overflow-x:hidden;overflow-y:auto;max-height:160px;">
+                            @{
+                                if (ViewBag.scheduleDayPrograms.Count > 0)
+                                {
+                                    foreach (var itmes in ViewBag.scheduleDayPrograms)
+                                    {
+                                        string inputId = itmes.id + "input";
+                                        string startId = itmes.id + "start_time";
+                                        string endId = itmes.id + "end_time";
+                                        string buttonId = itmes.id + "button";
+                                        <li class="inputList" id="@inputId" name="@itmes.program_name">
+                                            <div class='form-group row' style='margin-bottom:0px'>
+                                                <label class='col-sm-1 col-form-label label-short1'>@itmes.program_name</label>
+                                                <label class='col-sm-1 col-form-label label-short1'>开始时间：</label>
+                                                <div class='col-sm-2 input-short'>
+                                                    <input class='start form-control' type='time' id='@startId' value='@itmes.start_time' onchange="changeStartTime('@startId','@endId')" disabled />
+                                                </div>
+                                                <label class='col-sm-1 col-form-label label-short1'>结束时间：</label>
+                                                <div class='col-sm-2 input-short'>
+                                                    <input class='end form-control' type='time' id='@endId' value='@itmes.end_time' onchange="changeEndTime('@startId','@endId')" disabled />
+                                                </div>
+                                                <div class='col-sm-2 input-short'>
+                                                    <button id='@buttonId' name="@itmes.program_name" class='click btn btn-primary' onclick="removeProgram(@itmes.id,'@itmes.program_name')" 
+                                                            data-toggle='modal' data-target='#myDelModal' disabled><i class='far fa-trash-alt'></i>  删除</button>
+                                                </div>
+
+                                            </div>
+                                            <hr class='hrstyle' />
+                                        </li>
+                                    }
+
+                                }
+
+                            }
+                        </ol>
+                    </div>
+
+                </div>
+
+            </div>
+            <div class="modal fade" id="myDelModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="myModalLabel">
+                                删除
+                            </h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                                &times;
+                            </button>
+
+                        </div>
+                        <div class="modal-body">
+                            <input type="hidden" id="deleteId" />
+                            是否确认删除该节目？
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                                关闭
+                            </button>
+                            <button type="button" class="btn btn-primary" onclick="ConfirmDelete()">
+                                确认
+                            </button>
+                        </div>
+                    </div><!-- /.modal-content -->
+                </div><!-- /.modal -->
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-sm-4" style="padding-left:35px">
+                <div class="content_top" style="margin-left: 0px;margin-right:0px;height: 50px;">
+                    <label class="col-sm-3 col-form-label" style="padding-top:16px">目录</label>
+                </div>
+                <div class="content_footer" style="max-height:470px;overflow-y:auto;">
+                    <ul id="ztrees" class="ztree"></ul>
+                </div>
+            </div>
+            <div class="col-sm-8" style="padding-right:35px;">
+                <div class="content_top" style="margin-left: 0px;margin-right:0px;height: 50px;">
+
+                    <div class="content_top_div">
+                        <span class="left">搜索</span>
+                        <input type="text" value="" class="content_top_text right" placeholder="按名称搜索" oninput="Serch($(this).val())" />
+                    </div>
+                    <div class="content_top_div">
+                        <span class="left">全选</span>
+                        <input id="selectAll" name="selectAll" type="checkbox" value="" class="content_top_checkbox right" onclick="SelectAll()" />
+                    </div>
+                    <div class="content_top_div">
+                        <input type="hidden" value="" id="media_group_id" name="media_group_id" />
+                    </div>
+
+                </div>
+                <div class="content_footer" id="content_medias" style="max-height:470px;overflow-y:auto;">
+                    @{
+                        foreach (var itmes in Model)
+                        {
+                            string media_name = Advantech.CoreExtention.Shared.SubStringName(itmes.media_name);
+                            string divId = "content_media_" + itmes.id+":content_name_"+ itmes.media_name;
+                            string checkboxClass = "checkbox_" + itmes.id;
+                            <div class="content_media" id="@divId" draggable="true" ondragstart="dragStart(event,'@divId')">
+                                <img src="@itmes.preview_address" onclick="SelectFile(@itmes.id)" />
+                                <a href="@itmes.media_address" download="@itmes.media_address" title="媒体名称:@itmes.media_name&#10;媒体类型:@itmes.media_type&#10;上传时间:@itmes.create_time">@media_name</a>
+                                <input id="checkboxs" name="checkboxs" type="checkbox" value="@itmes.id" class="@checkboxClass" />
+                            </div>
+                        }
+                    }
+                </div>
+            </div>
+
+        </div>
+
+
+    </div>
+</div>
+   
+
+

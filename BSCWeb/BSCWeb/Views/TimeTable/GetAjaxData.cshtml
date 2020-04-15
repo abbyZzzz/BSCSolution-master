@@ -1,0 +1,18 @@
+﻿@{
+    Layout = null;
+    @model List<Advantech.Entity.MediaInfo>
+}
+@{
+    foreach (var itmes in Model)
+    {
+        string media_name = Advantech.CoreExtention.Shared.SubStringName(itmes.media_name);
+        string divId = "content_media_" + itmes.id;
+        string checkboxClass = "checkbox_" + itmes.id;
+        <div class="content_media" id="@divId" draggable="true" ondragstart="dragStart(event,'@divId')">
+            <img src="@itmes.preview_address" onclick="SelectFile(@itmes.id)" />
+            <a href="@itmes.media_address" download="@itmes.media_address" title="媒体名称:@itmes.media_name&#10;媒体类型:@itmes.media_type&#10;上传时间:@itmes.create_time">@media_name</a>
+            <input id="checkboxs" name="checkboxs" type="checkbox" value="@itmes.id" class="@checkboxClass" />
+        </div>
+    }
+}
+

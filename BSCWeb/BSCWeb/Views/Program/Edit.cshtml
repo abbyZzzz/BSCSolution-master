@@ -1,0 +1,155 @@
+﻿@{
+    Layout = null;
+    Html.RenderPartial("/Views/Shared/_PartialView.cshtml");
+}
+<link rel="stylesheet" type="text/css" href="~/drag/css/jquery-ui.css">
+<!-- 引用js -->
+<script type="text/javascript" src="~/drag/js/drag.js"></script>
+<script src="~/drag/js/jquery-ui.min.js"></script>
+<script>
+    var i = 1;
+    function add() {
+        var className = "box-5 div";
+        var blockName = "resizable" + i;
+        var html = "<div id=\"" + blockName + "\" class=\"ui-widget-content\" onmouseover=\"Giving('" + blockName + "')\"><i class='hander'></i></div>";
+        $("#screen_box").append(html);
+        Handle(className, blockName);
+        i++;
+    }
+
+    function Handle(className, blockName) {
+        $("#" + blockName).dragging({
+            move: 'both',
+            randomPosition: true,
+            hander: '.hander',
+            xRand: 100,
+            yRand: 100
+        });
+        $("#" + blockName).resizable({
+            aspectRatio: false//开启按比例缩放，也可以指定比例： 16 / 9
+        });
+    }
+
+
+</script>
+<div class="content">
+    <div class="container-fluid">
+        <div class="page-title-box">
+            <div class="row align-items-center">
+                <div class="col-sm-6">
+                    <h4 class="page-title">节目管理</h4>
+                </div>
+                <div class="col-sm-6">
+                    <ol class="breadcrumb float-right">
+                        <li class="breadcrumb-item"><a href="javascript:void(0);">BSC</a></li>
+                        <li class="breadcrumb-item active">节目管理</li>
+                        <li class="breadcrumb-item active">节目制作</li>
+                    </ol>
+                </div>
+            </div>
+            <!-- end row -->
+        </div>
+        <!-- end page-title -->
+        <div class="content">
+            <div class="div-left">
+                <ul>
+                    <li><a href="#" onclick="add()"><i class="icon-tv-monitor" style="font-size:25px"></i><div>综合播放</div></a></li>
+                </ul>
+            </div>
+            <div class="div-centre">
+                <div class="content_top">
+                    <div class="content_top_div">
+                        <span class="left">搜索</span>
+                        <input type="text" value="" class="content_top_text right" placeholder="按名称搜索" oninput="Serch($(this).val())" />
+                    </div>
+                    <span class="left">区块</span>
+                    <select class="content_top_select">
+                        <option>节目</option>
+                        <option>1111111</option>
+                        <option>2222222</option>
+                        <option>3333333</option>
+                    </select>
+                    <span class="left">x轴</span>
+                    <input type="text" value="" class="content_top_text2" />
+                    <span>y轴</span>
+                    <input type="text" value="" class="content_top_text2" />
+                    <span>宽度</span>
+                    <input type="text" value="" class="content_top_text2" />
+                    <span>高度</span>
+                    <input type="text" value="" class="content_top_text2" />
+                </div>
+                <div class="content_down">
+                    <div class="box box-5" id="screen_box">
+                        
+                    </div>
+                </div>
+            </div>
+            <div class="div-right">
+                <div class="content_top"><span class="left">节目设置</span></div>
+                <div class="content_downs">
+                    父元素的w<input type="text" style="width:80px" id="faWidth" name="faWidth" value="" /><br />
+                    父元素的h<input type="text" style="width:80px" id="faHeight" name="faHeight" value="" /><br />
+                    This的w<input type="text" style="width:80px" id="thisWidth" name="thisWidth" value="" /><br />
+                    This的h<input type="text" style="width:80px" id="thisHeight" name="thisHeight" value="" /><br />
+                    This的x<input type="text" style="width:80px" id="thisX" name="thisX" value="" /><br />
+                    This的y<input type="text" style="width:80px" id="thisY" name="thisY" value="" /><br />
+                    @*<div>
+            <span class="left">节目名称:</span>
+            <input type="text" value="" class="content_top_text3" />
+        </div>
+        <div>
+            <span class="left">背景颜色:</span>
+            <input type="text" name="bg_color" id="bg_color" value="" class="content_top_text3 width-35" />
+            <input type="color" value="" class="content_top_text3 width-17" onchange="bg_color.value=this.value" />
+        </div>
+        <div>
+            <span class="left">背景图片:</span>
+            <input type="text" value="" class="content_top_text3 width-35" />
+            <input id="bg_image_browse" type="button" value="浏览" class="content_top_button2 width-17" />
+            <input id="bg_image_reset" type="button" value="清除" class="content_top_button2 width-17" />
+        </div>
+        <div>
+            <span class="left">背景音乐:</span>
+            <input type="text" class="content_top_text3 width-35" />
+            <input id="bg_music_browse" type="button" value="浏览" class="content_top_button2 width-17" />
+            <input id="bg_music_reset" type="button" value="清除" class="content_top_button2 width-17" />
+        </div>
+        <div>
+            <span class="left">备注说明:</span>
+            <input type="text" value="" class="content_top_text3" />
+        </div>
+        <div>
+            <span class="left">节目图标:</span>
+            <input type="text" value="" class="content_top_text3 width-35" />
+            <input id="bg_icon_browse" type="button" value="浏览" class="content_top_button2 width-17" />
+            <input id="bg_icon_reset" type="button" value="清除" class="content_top_button2 width-17" />
+        </div>*@
+                </div>
+                <div class="content_top"><span class="left">屏幕信息</span></div>
+                <div class="content_downs border-bottom">
+                    <fieldset>
+                        <legend>Display1</legend>
+                        <div>
+                            <span>分辨率:</span>
+                            <input type="text" value="" class="content_top_text3 width-17" />
+                            <span>x</span>
+                            <input type="text" value="" class="content_top_text3 width-17" />
+                        </div>
+                        <div>
+                            <span>坐标轴:</span>
+                            <input type="text" value="" class="content_top_text3 width-17" />
+                            <span>x</span>
+                            <input type="text" value="" class="content_top_text3 width-17" />
+                        </div>
+                    </fieldset>
+
+                </div>
+            </div>
+            <div class="div-right2"></div>
+        </div>
+
+
+    </div>
+</div>
+
+
